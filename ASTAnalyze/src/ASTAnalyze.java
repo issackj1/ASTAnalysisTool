@@ -1,6 +1,7 @@
-import java.io.*;
 import org.eclipse.jdt.core.dom.*;
+import java.io.*;
 import java.util.*;
+
 
 /**
  * 
@@ -11,11 +12,24 @@ import java.util.*;
 
 public class ASTAnalyze {
 
+	public int classDeclarations;
+	public int annotationDeclarations;
+	public int enumDeclarations;
+	public int interfaceDeclarations;
 
+	public ASTAnalyze() {
+		
+		this.classDeclarations = 0;
+		this.annotationDeclarations = 0;
+		this.enumDeclarations = 0;
+		this.interfaceDeclarations = 0;
+	
+	}
+	
 	public String getFile(File filename) throws IOException {
 		
 		StringBuilder stringbuilder = new StringBuilder();
-		if (filename.isFile()) {
+		if (filename.isFile() && filename.getName().endsWith(".java")) {
 			
 			BufferedReader br = null;
 			
@@ -54,19 +68,82 @@ public class ASTAnalyze {
 		
 		return sr.toString();
 	}
+	
+	public ASTParser initParser(String code) {
 		
+		ASTParser parser = ASTParser.newParser(AST.JLS8);
+		parser.setSource(code.toCharArray());
+		parser.setResolveBindings(true);
+		parser.setKind(ASTParser.K_COMPILATION_UNIT);
+		
+		return parser;
+	}
+	
+	// Take note that many methods below have not been created yet -
+	// Use classCount as a framework to create the other methods to increment the 
+	// count of the declarations/references 
+	
+	public void parse(ASTParser parser, String targetName) {
+			
+		switch(targetName) {
+		
+		case 'Class':
+			this.classCount();
+		case 'Annotation':
+			this.annotationCount();
+		case 'Interface':
+			this.interfaceCount();
+		case 'Enumeration':
+			this.enumCount();
+
+		}
+	}
+	
+	
+	// Sample createAST portion method that will go under parse(ASTParser parse, String targetName)
+	
+	public void classCount(ASTParser parser) {
+		
+		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+
+		cu.accept(new ASTVisitor() {
+			
+			public boolean visit(TypeDeclaration node) {			
+				
+				return false;
+			}
+			
+		});
+	}
+	
+
+	
 	public static void main(String[] args) throws IOException {
 
 		// Initialize Class ASTAnalyze
 		ASTAnalyze analyzer = new ASTAnalyze();
-		
+
 		// Prepare source code from pathfile
-		String sourcepath = args[0];					// Source path from terminal argument
-		File directory= new File(sourcepath);			// Create File Object with source name
-		File[] fileList = directory.listFiles();		// Gets all files in directory into a File[]
+		String sourcepath = args[0];						// Source path from terminal argument
+		File directory = new File(sourcepath);				// Create File Object with source name
+		File[] fileList = directory.listFiles();			// Gets all files in directory into a File[]
 		String codeBase = analyzer.getCodeBase(fileList);
 	
-		System.out.println(codeBase);
+		// Initialize ASTParser
+		ASTParser parser = analyzer.initParser(codeBase);	// Initialize ASTParser with given preferences
+		
+		// Determine fully qualified name to count
+		//String target = args[1];
+		//analyzer.parse(parser, target);
+		
+		analyzer.classCount(parser);
+		
+		
+
+		
+		
+		
+		
 	}
 
 }
