@@ -1,3 +1,4 @@
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.*;
 import java.io.*;
 import java.util.*;
@@ -75,7 +76,9 @@ public class ASTAnalyze {
 		parser.setSource(code.toCharArray());
 		parser.setResolveBindings(true);
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
-		
+		Map options = JavaCore.getOptions();
+		options.put(JavaCore.COMPILER_SOURCE, JavaCore.VERSION_1_5);
+		parser.setCompilerOptions(options);
 		return parser;
 	}
 	
@@ -87,14 +90,14 @@ public class ASTAnalyze {
 			
 		switch(targetName) {
 		
-		case 'Class':
-			this.classCount();
-		case 'Annotation':
-			this.annotationCount();
-		case 'Interface':
-			this.interfaceCount();
-		case 'Enumeration':
-			this.enumCount();
+		case "Class":
+			this.classCount(parser);
+		case "Annotation":
+			this.annotationCount(parser);
+		case "Interface":
+			this.interfaceCount(parser);
+		case "Enumeration":
+			this.enumCount(parser);
 
 		}
 	}
@@ -116,6 +119,38 @@ public class ASTAnalyze {
 		});
 	}
 	
+	public void interfaceCount(ASTParser parser) {
+		
+		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+		
+		cu.accept(new ASTVisitor() {
+			
+			public boolean visit(TypeDeclaration node) {
+				
+				if (node.isInterface()) {
+					System.out.println(node.getName().getFullyQualifiedName());
+					interfaceDeclarations++;
+				}
+				return false;
+			}
+		});
+	}
+	
+	public void enumCount(ASTParser parser) {
+		
+		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+		
+		cu.accept(new ASTVisitor() {
+			
+			public boolean visit(EnumDeclaration node) {
+				
+				System.out.println(node.getName().getFullyQualifiedName());
+				enumDeclarations++;
+				
+				return false;
+			}
+		});
+	}
 
 	
 	public static void main(String[] args) throws IOException {
@@ -136,12 +171,11 @@ public class ASTAnalyze {
 		//String target = args[1];
 		//analyzer.parse(parser, target);
 		
-		analyzer.classCount(parser);
-		
-		
+		analyzer.enumCount(parser);
+			
 
 		
-		
+	
 		
 		
 	}
