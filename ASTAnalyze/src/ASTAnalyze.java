@@ -180,8 +180,9 @@ public class ASTAnalyze {
 			
 		}
 		
-		System.out.println(analyzer.getDeclarationCount());
-		System.out.println(analyzer.getReferenceCount());	
+		System.out.println("Type to Count: " + targetName);
+		System.out.println("Number of Declarations: " + analyzer.getDeclarationCount());
+		System.out.println("Number of References: " + analyzer.getReferenceCount());	
 	}
 
 }
