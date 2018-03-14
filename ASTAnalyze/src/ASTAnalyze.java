@@ -208,9 +208,7 @@ public class ASTAnalyze {
 		
 		for (File files: fileList) {
 			String javaFile = analyzer.getFile(files);
-			ASTParser parser = analyzer.initParser(javaFile, files, sourcepath);
-			
-			analyzer.classCount(parser); 			
+			ASTParser parser = analyzer.initParser(javaFile, files, sourcepath);		
 		}
 		
 	
