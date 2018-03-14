@@ -70,15 +70,22 @@ public class ASTAnalyze {
 		return sr.toString();
 	}
 	
-	public ASTParser initParser(String code) {
+	public ASTParser initParser(String code, File fileName, String source) {
 		
+		String classPathReplacer = new File("").getAbsolutePath();
+		String[] classPathReplacerArray = {classPath};
+				
 		ASTParser parser = ASTParser.newParser(AST.JLS8);
 		parser.setSource(code.toCharArray());
-		parser.setResolveBindings(true);
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
 		Map options = JavaCore.getOptions();
 		options.put(JavaCore.COMPILER_SOURCE, JavaCore.VERSION_1_5);
 		parser.setCompilerOptions(options);
+		parser.setResolveBindings(true);
+		parser.setBindingsRecovery(true);
+		parser.setUnitName(fileName.getName());
+		
+		parser.setEnvironment(classPathReplacerArray, null, null, false);
 		return parser;
 	}
 		
@@ -111,17 +118,17 @@ public class ASTAnalyze {
 	public void classCount(ASTParser parser) {
 
 		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
-
+		
 		cu.accept(new ASTVisitor() {
 
 			public boolean visit(TypeDeclaration node) {
-				
-			if(!node.isInterface()) {
-				System.out.println(node.getName().getFullyQualifiedName());
-				classDeclarations++;
-			}
 			
-			return false;
+				if(!node.isInterface()) {
+					System.out.println(node.getName().getFullyQualifiedName());
+					classDeclarations++;
+				}
+			
+				return false;
 			}
 
 		});
@@ -186,16 +193,19 @@ public class ASTAnalyze {
 		ASTAnalyze analyzer = new ASTAnalyze();
 
 		// Prepare source code from pathfile
-		String sourcepath = args[0];						// Source path from terminal argument
+		String sourcepath = args[0];		
+		//String targetClass = args[1];
+		
+		// Source path from terminal argument
 		File directory = new File(sourcepath);				// Create File Object with source name
 		File[] fileList = directory.listFiles();			// Gets all files in directory into a File[]
-		String codeBase = analyzer.getCodeBase(fileList);
+		
+		for (File files: fileList) {
+			String javaFile = analyzer.getFile(files);
+			ASTParser parser = analyzer.initParser(javaFile, files, sourcepath);
 	
-		// Initialize ASTParser
-		ASTParser parser = analyzer.initParser(codeBase);	// Initialize ASTParser with given preferences
-		
-		// Determine fully qualified name to count
-		
+		}
+	
 	}
 
 }
