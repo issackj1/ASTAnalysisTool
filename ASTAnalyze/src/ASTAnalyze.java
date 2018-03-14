@@ -142,7 +142,6 @@ public class ASTAnalyze {
 					if(varBinding.isField() && 
 							targetName.equals(varBinding.getType().getQualifiedName())){
 						refCount++;
-						System.out.println("I've been hit!");
 					}
 				}
 				return false;
@@ -164,8 +163,7 @@ public class ASTAnalyze {
 				if(binding instanceof IVariableBinding) {
 					IVariableBinding varBinding = (IVariableBinding) binding;
 					ITypeBinding declaringType = varBinding.getDeclaringClass();
-					//System.out.println(varBinding.getVariableDeclaration().);
-
+					
 					if(varBinding.isField() && 
 							targetName.equals(varBinding.getType().getQualifiedName()) ){
 						referenceCount++;
@@ -204,9 +202,7 @@ public class ASTAnalyze {
 			
 		}
 		
-		System.out.println("Type to Count: " + targetName);
-		System.out.println("Number of Declarations: " + analyzer.getDeclarationCount());
-		System.out.println("Number of References: " + analyzer.getReferenceCount());	
+		System.out.println(targetName + "." + " Declarations found: " + analyzer.getDeclarationCount() + "." + " References found: " + analyzer.getReferenceCount() + ".");
 	}
 
 }
