@@ -8,7 +8,7 @@ import org.eclipse.jdt.core.dom.*;
 
 /**
  * 
- * @author Jin Song, Issack John
+ * @author Jin Song
  * @version 1.0
  * @since March/13/2018
  */
