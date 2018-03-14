@@ -56,7 +56,6 @@ public class ASTAnalyze {
 		return stringbuilder.toString();
 	}
 	
-	
 	@Deprecated
 	public String getCodeBase(File[] fileList) throws IOException {
 	
@@ -141,7 +140,6 @@ public class ASTAnalyze {
 		});
 	}
 	
-
 	public void annotationCount(ASTParser parser) {
 
 		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
@@ -178,28 +176,7 @@ public class ASTAnalyze {
 			}
 		});
 	}
-	
-	
-	public void referenceCount(ASTParser parser) {
-
-		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
-
-		cu.accept(new ASTVisitor() {
-
-			public boolean visit(VariableDeclarationStatement node) {
-			
-				String a;
-			}
-			
-			public boolean visit(SimpleName node) {
-				
-			}	
-				
-			return true;
-			
-		});
-	}
-	
+		
 	public void enumCount(ASTParser parser) {
 		
 		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
