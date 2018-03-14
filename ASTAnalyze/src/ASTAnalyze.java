@@ -116,7 +116,7 @@ public class ASTAnalyze {
 	// Sample createAST portion method that will go under parse(ASTParser parse, String targetName)
 	
 	public void classCount(ASTParser parser) {
-		
+
 		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
 
 		cu.accept(new ASTVisitor() {
@@ -148,7 +148,7 @@ public class ASTAnalyze {
 
 				return false;
 			}
-			
+
 		});
 	}
 	
