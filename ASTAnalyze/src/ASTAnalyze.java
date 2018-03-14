@@ -1,7 +1,9 @@
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.dom.*;
+package ASTAnalyze.src;
 import java.io.*;
 import java.util.*;
+
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.dom.*;
 
 
 /**
@@ -17,6 +19,7 @@ public class ASTAnalyze {
 	public int annotationDeclarations;
 	public int enumDeclarations;
 	public int interfaceDeclarations;
+	public int referencesCount;
 
 	public ASTAnalyze() {
 		
@@ -24,6 +27,7 @@ public class ASTAnalyze {
 		this.annotationDeclarations = 0;
 		this.enumDeclarations = 0;
 		this.interfaceDeclarations = 0;
+		this.referencesCount = 0;
 	
 	}
 	
@@ -73,7 +77,7 @@ public class ASTAnalyze {
 	public ASTParser initParser(String code, File fileName, String source) {
 		
 		String classPathReplacer = new File("").getAbsolutePath();
-		String[] classPathReplacerArray = {classPath};
+		String[] classPathReplacerArray = {classPathReplacer};
 				
 		ASTParser parser = ASTParser.newParser(AST.JLS8);
 		parser.setSource(code.toCharArray());
@@ -124,7 +128,6 @@ public class ASTAnalyze {
 			public boolean visit(TypeDeclaration node) {
 			
 				if(!node.isInterface()) {
-					System.out.println(node.getName().getFullyQualifiedName());
 					classDeclarations++;
 				}
 			
@@ -143,7 +146,6 @@ public class ASTAnalyze {
 			public boolean visit(AnnotationTypeDeclaration node) {
 				
 				if (node.getClass().isAnnotation()) {
-					System.out.println(node.getName().getFullyQualifiedName());
 					annotationDeclarations++;
 				}
 
@@ -162,7 +164,6 @@ public class ASTAnalyze {
 			public boolean visit(TypeDeclaration node) {
 				
 				if (node.isInterface()) {
-					System.out.println(node.getName().getFullyQualifiedName());
 					interfaceDeclarations++;
 				}
 				
@@ -171,31 +172,22 @@ public class ASTAnalyze {
 		});
 	}
 	
-	public void referenceCount(ASTParser parser) {
+	public void referenceCount(ASTParser parser, String targetName) {
 
-		parser.setResolveBindings(true);
 		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
 
 		cu.accept(new ASTVisitor() {
 
 			public boolean visit(SimpleName node) {
 				
-				System.out.println(node.getQualifier().properties().getClass().getCanonicalName());
-				//System.out.println(node.getClass().getCanonicalName());
-				
 				IBinding binding = node.resolveBinding();
 				
-				if(binding instanceof IBinding) {
+				if(binding instanceof IVariableBinding) {
 					IVariableBinding varBinding = (IVariableBinding) binding;
-					ITypeBinding declaringType = varBinding.getDeclaringClass();
-					System.out.println(varBinding.isField());
-					if(varBinding.isField() && "java.lang.String".equals(declaringType.getQualifiedName())){
+					if(targetName.equals(varBinding.getType().getQualifiedName())){
 						referencesCount++;
-						System.out.println(node);
 					}
 				}
-
-
 				return true;
 			}
 		});
@@ -209,7 +201,6 @@ public class ASTAnalyze {
 			
 			public boolean visit(EnumDeclaration node) {
 				
-				System.out.println(node.getName().getFullyQualifiedName());
 				enumDeclarations++;
 				
 				return false;
@@ -224,7 +215,7 @@ public class ASTAnalyze {
 
 		// Prepare source code from pathfile
 		String sourcepath = args[0];		
-		//String targetClass = args[1];
+		String targetClass = args[1];
 		
 		// Source path from terminal argument
 		File directory = new File(sourcepath);				// Create File Object with source name
@@ -233,7 +224,8 @@ public class ASTAnalyze {
 		for (File files: fileList) {
 			String javaFile = analyzer.getFile(files);
 			ASTParser parser = analyzer.initParser(javaFile, files, sourcepath);
-	
+			analyzer.classCount(parser);
+			analyzer.referenceCount(parser, targetClass);
 		}
 	
 	}
