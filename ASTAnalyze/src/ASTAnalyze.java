@@ -148,11 +148,6 @@ public class ASTAnalyze {
 			}
 			
 		});
-	}
-	
-		public void countReference(ASTParser parser, String targetName) {
-
-		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
 
 		cu.accept(new ASTVisitor() {
 
@@ -162,11 +157,10 @@ public class ASTAnalyze {
 			
 				if(binding instanceof IVariableBinding) {
 					IVariableBinding varBinding = (IVariableBinding) binding;
-					ITypeBinding declaringType = varBinding.getDeclaringClass();
-					
+										
 					if(varBinding.isField() && 
 							targetName.equals(varBinding.getType().getQualifiedName()) ){
-						referenceCount++;
+						refCount++;
 					}
 				}
 				return true;
