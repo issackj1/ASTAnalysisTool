@@ -2,6 +2,9 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.*;
 import java.io.*;
 import java.util.*;
+import java.util.ArrayList;
+
+import javax.naming.Binding;
 
 
 /**
@@ -50,10 +53,11 @@ public class ASTAnalyze {
 				}
 			}
 		}
-		
-	return stringbuilder.toString();
+		return stringbuilder.toString();
 	}
 	
+	
+	@Deprecated
 	public String getCodeBase(File[] fileList) throws IOException {
 	
 		ArrayList<String> codeBaseArray = new ArrayList<String>();
@@ -69,6 +73,7 @@ public class ASTAnalyze {
 		
 		return sr.toString();
 	}
+	
 	
 	public ASTParser initParser(String code, File fileName, String source) {
 		
@@ -88,6 +93,7 @@ public class ASTAnalyze {
 		parser.setEnvironment(classPathReplacerArray, null, null, false);
 		return parser;
 	}
+	
 		
 	public void parse(ASTParser parser, String targetName) {
 			
@@ -114,6 +120,7 @@ public class ASTAnalyze {
 			
 		}
 	}
+	
 		
 	public void classCount(ASTParser parser) {
 
@@ -127,12 +134,13 @@ public class ASTAnalyze {
 					System.out.println(node.getName().getFullyQualifiedName());
 					classDeclarations++;
 				}
-			
+												
 				return false;
 			}
 
 		});
 	}
+	
 
 	public void annotationCount(ASTParser parser) {
 
@@ -171,33 +179,24 @@ public class ASTAnalyze {
 		});
 	}
 	
+	
 	public void referenceCount(ASTParser parser) {
 
-		parser.setResolveBindings(true);
 		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
 
 		cu.accept(new ASTVisitor() {
 
+			public boolean visit(VariableDeclarationStatement node) {
+			
+				String a;
+			}
+			
 			public boolean visit(SimpleName node) {
 				
-				System.out.println(node.getQualifier().properties().getClass().getCanonicalName());
-				//System.out.println(node.getClass().getCanonicalName());
+			}	
 				
-				IBinding binding = node.resolveBinding();
-				
-				if(binding instanceof IBinding) {
-					IVariableBinding varBinding = (IVariableBinding) binding;
-					ITypeBinding declaringType = varBinding.getDeclaringClass();
-					System.out.println(varBinding.isField());
-					if(varBinding.isField() && "java.lang.String".equals(declaringType.getQualifiedName())){
-						referencesCount++;
-						System.out.println(node);
-					}
-				}
-
-
-				return true;
-			}
+			return true;
+			
 		});
 	}
 	
@@ -234,7 +233,7 @@ public class ASTAnalyze {
 			String javaFile = analyzer.getFile(files);
 			ASTParser parser = analyzer.initParser(javaFile, files, sourcepath);
 			
-			analyzer.classCount(parser);
+			analyzer.classCount(parser); 			
 		}
 		
 	
