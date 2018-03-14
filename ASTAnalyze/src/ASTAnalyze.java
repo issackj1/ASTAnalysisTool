@@ -92,13 +92,23 @@ public class ASTAnalyze {
 		
 		case "Class":
 			this.classCount(parser);
+			break;
+			
 		case "Annotation":
 			this.annotationCount(parser);
+			break;
+			
 		case "Interface":
 			this.interfaceCount(parser);
+			break;
+			
 		case "Enumeration":
 			this.enumCount(parser);
-
+			break;
+			
+		default:
+			break;
+			
 		}
 	}
 	
@@ -110,9 +120,32 @@ public class ASTAnalyze {
 		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
 
 		cu.accept(new ASTVisitor() {
-			
-			public boolean visit(TypeDeclaration node) {			
+
+			public boolean visit(TypeDeclaration node) {
 				
+			if(!node.isInterface()) {
+				System.out.println(node.getName().getFullyQualifiedName());
+				classDeclarations++;
+			}
+			return false;
+			}
+
+		});
+	}
+
+	public void annotationCount(ASTParser parser) {
+
+		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+
+		cu.accept(new ASTVisitor() {
+
+			public boolean visit(AnnotationTypeDeclaration node) {
+				
+				if (node.getClass().isAnnotation()) {
+					System.out.println(node.getName().getFullyQualifiedName());
+					annotationDeclarations++;
+				}
+
 				return false;
 			}
 			
@@ -170,14 +203,6 @@ public class ASTAnalyze {
 		// Determine fully qualified name to count
 		//String target = args[1];
 		//analyzer.parse(parser, target);
-		
-		analyzer.enumCount(parser);
-			
-
-		
-	
-		
-		
 	}
 
 }
