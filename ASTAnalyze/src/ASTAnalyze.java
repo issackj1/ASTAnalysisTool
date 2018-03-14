@@ -9,7 +9,7 @@ import javax.naming.Binding;
 
 /**
  * 
- * @author Jin Song
+ * @author Jin Song, Issack John
  * @version 1.0
  * @since March/13/2018
  */
@@ -20,6 +20,7 @@ public class ASTAnalyze {
 	public int annotationDeclarations;
 	public int enumDeclarations;
 	public int interfaceDeclarations;
+	public int referencesCount;
 
 	public ASTAnalyze() {
 		
@@ -27,6 +28,7 @@ public class ASTAnalyze {
 		this.annotationDeclarations = 0;
 		this.enumDeclarations = 0;
 		this.interfaceDeclarations = 0;
+		this.referencesCount = 0;
 	
 	}
 	
@@ -176,7 +178,28 @@ public class ASTAnalyze {
 			}
 		});
 	}
-		
+	
+	public void referenceCount(ASTParser parser, String targetName) {
+
+		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+
+		cu.accept(new ASTVisitor() {
+
+			public boolean visit(SimpleName node) {
+				
+				IBinding binding = node.resolveBinding();
+				
+				if(binding instanceof IVariableBinding) {
+					IVariableBinding varBinding = (IVariableBinding) binding;
+					if(targetName.equals(varBinding.getType().getQualifiedName())){
+						referencesCount++;
+					}
+				}
+				return true;
+			}
+		});
+	}
+	
 	public void enumCount(ASTParser parser) {
 		
 		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
@@ -185,7 +208,6 @@ public class ASTAnalyze {
 			
 			public boolean visit(EnumDeclaration node) {
 				
-				System.out.println(node.getName().getFullyQualifiedName());
 				enumDeclarations++;
 				
 				return false;
