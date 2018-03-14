@@ -1,10 +1,11 @@
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.*;
 import java.io.*;
 import java.util.*;
 import java.util.ArrayList;
-import javax.naming.Binding;
-
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  * 
@@ -15,13 +16,13 @@ import javax.naming.Binding;
 
 public class ASTAnalyze {
 
-	public int declarationCount;
-	public int referenceCount;
+	public int decCount;
+	public int refCount;
 
 	public ASTAnalyze() {
 		
-		this.declarationCount = 0;
-		this.referenceCount = 0;
+		this.decCount = 0;
+		this.refCount = 0;
 	
 	}
 	
@@ -67,8 +68,7 @@ public class ASTAnalyze {
 		
 		return sr.toString();
 	}
-	
-	
+		
 	public ASTParser initParser(String code, File fileName) {
 		
 		String classPathReplacer = new File("").getAbsolutePath();
@@ -87,125 +87,77 @@ public class ASTAnalyze {
 		parser.setEnvironment(classPathReplacerArray, null, null, false);
 		return parser;
 	}
-	
 		
-	public void parse(ASTParser parser, String targetName, String source, File file) {
-			
-		this.countClass(parser);
-		parser = this.initParser(source, file);
+	public void parse(ASTParser parser, String targetName) {
 		
-		this.countAnnotation(parser);
-		parser = this.initParser(source, file);
-		
-		this.countInterface(parser);
-		parser = this.initParser(source, file);
-		
-		this.countEnum(parser);
-		parser = this.initParser(source, file);
-						
-		this.countReference(parser, targetName);
-		
-	}
-			
-	public void countClass(ASTParser parser) {
-
 		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
 		
 		cu.accept(new ASTVisitor() {
-
+			
 			public boolean visit(TypeDeclaration node) {
 			
-				if(!node.isInterface()) {
-					declarationCount++;
-					System.out.println("Declaration was found");
+				ITypeBinding type = node.resolveBinding();
+				String nodeName = type.getQualifiedName();
+				
+				if (targetName.equals(nodeName)) {
+					decCount++;
 				}
-												
 				return false;
 			}
-
-		});
-	}
-	
-	public void countAnnotation(ASTParser parser) {
-
-		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
-
-		cu.accept(new ASTVisitor() {
-
+			
 			public boolean visit(AnnotationTypeDeclaration node) {
 				
-				if (node.getClass().isAnnotation()) {
-					declarationCount++;
-					System.out.println("Declaration was found");
+				ITypeBinding type =  node.resolveBinding();
+				String nodeName = type.getQualifiedName();
+				
+				if (targetName.equals(nodeName)) {
+					decCount++;
 				}
-
-				return false;
+				return false;				
 			}
-
-		});
-	}
-	
-	public void countInterface(ASTParser parser) {
-		
-		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
-		
-		cu.accept(new ASTVisitor() {
-			
-			public boolean visit(TypeDeclaration node) {
-				
-				if (node.isInterface()) {
-					declarationCount++;
-					System.out.println("Declaration was found");
-				}
-				
-				return false;
-			}
-		});
-	}
-	
-	public void countReference(ASTParser parser, String targetName) {
-
-		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
-
-		cu.accept(new ASTVisitor() {
-
-			public boolean visit(SimpleName node) {
-				
-				IBinding binding = node.resolveBinding();
-				
-				if(binding instanceof IVariableBinding) {
-					IVariableBinding varBinding = (IVariableBinding) binding;
-					if(targetName.equals(varBinding.getType().getQualifiedName())){
-						referenceCount++;
-						System.out.println("Reference was found");
-					}
-				}
-				return true;
-			}
-		});
-	}
-	
-	public void countEnum(ASTParser parser) {
-		
-		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
-		
-		cu.accept(new ASTVisitor() {
 			
 			public boolean visit(EnumDeclaration node) {
 				
-				declarationCount++;
+				ITypeBinding type = node.resolveBinding();
+				String nodeName = type.getQualifiedName();
 				
+				if (targetName.equals(nodeName)) {
+					decCount++;
+				}
+				return false;
+			}
+			
+		});
+		
+		cu.accept(new ASTVisitor() {
+			
+			public boolean visit(SimpleName node) {
+				
+				if (targetName.equals(node.getFullyQualifiedName())) {
+					refCount++;
+				}
+				return false;
+			}
+			
+			public boolean visit(PrimitiveType node) {
+				
+				ITypeBinding type = node.resolveBinding();
+				String nodeName = type.getQualifiedName();
+				
+				if (targetName.equals(nodeName)) {
+					refCount++;
+				}
 				return false;
 			}
 		});
 	}
-
+	
 	public int getDeclarationCount() {
-		return this.declarationCount;
+		return this.decCount;
 	}
 	
 	public int getReferenceCount() {
-		return this.referenceCount;
+		return this.refCount;
 	}
 	
 	public static void main(String[] args) throws IOException {
@@ -224,13 +176,12 @@ public class ASTAnalyze {
 		for (File files: fileList) {
 			String javaFile = analyzer.getFile(files);
 			ASTParser parser = analyzer.initParser(javaFile, files);
-			analyzer.parse(parser, targetName, javaFile, files);
+			analyzer.parse(parser, targetName);
+			
 		}
 		
 		System.out.println(analyzer.getDeclarationCount());
-		
-		System.out.println(analyzer.getReferenceCount());
-	
+		System.out.println(analyzer.getReferenceCount());	
 	}
 
 }
