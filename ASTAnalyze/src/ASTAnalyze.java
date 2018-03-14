@@ -171,6 +171,36 @@ public class ASTAnalyze {
 		});
 	}
 	
+	public void referenceCount(ASTParser parser) {
+
+		parser.setResolveBindings(true);
+		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+
+		cu.accept(new ASTVisitor() {
+
+			public boolean visit(SimpleName node) {
+				
+				System.out.println(node.getQualifier().properties().getClass().getCanonicalName());
+				//System.out.println(node.getClass().getCanonicalName());
+				
+				IBinding binding = node.resolveBinding();
+				
+				if(binding instanceof IBinding) {
+					IVariableBinding varBinding = (IVariableBinding) binding;
+					ITypeBinding declaringType = varBinding.getDeclaringClass();
+					System.out.println(varBinding.isField());
+					if(varBinding.isField() && "java.lang.String".equals(declaringType.getQualifiedName())){
+						referencesCount++;
+						System.out.println(node);
+					}
+				}
+
+
+				return true;
+			}
+		});
+	}
+	
 	public void enumCount(ASTParser parser) {
 		
 		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
