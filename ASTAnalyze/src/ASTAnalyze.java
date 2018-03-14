@@ -73,7 +73,7 @@ public class ASTAnalyze {
 	public ASTParser initParser(String code, File fileName, String source) {
 		
 		String classPathReplacer = new File("").getAbsolutePath();
-		String[] classPathReplacerArray = {classPath};
+		String[] classPathReplacerArray = {classPathReplacer};
 				
 		ASTParser parser = ASTParser.newParser(AST.JLS8);
 		parser.setSource(code.toCharArray());
@@ -203,8 +203,10 @@ public class ASTAnalyze {
 		for (File files: fileList) {
 			String javaFile = analyzer.getFile(files);
 			ASTParser parser = analyzer.initParser(javaFile, files, sourcepath);
-	
+			
+			analyzer.classCount(parser);
 		}
+		
 	
 	}
 
