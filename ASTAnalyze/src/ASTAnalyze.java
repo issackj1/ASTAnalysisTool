@@ -81,11 +81,7 @@ public class ASTAnalyze {
 		parser.setCompilerOptions(options);
 		return parser;
 	}
-	
-	// Take note that many methods below have not been created yet -
-	// Use classCount as a framework to create the other methods to increment the 
-	// count of the declarations/references 
-	
+		
 	public void parse(ASTParser parser, String targetName) {
 			
 		switch(targetName) {
@@ -111,10 +107,7 @@ public class ASTAnalyze {
 			
 		}
 	}
-	
-	
-	// Sample createAST portion method that will go under parse(ASTParser parse, String targetName)
-	
+		
 	public void classCount(ASTParser parser) {
 
 		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
@@ -127,6 +120,7 @@ public class ASTAnalyze {
 				System.out.println(node.getName().getFullyQualifiedName());
 				classDeclarations++;
 			}
+			
 			return false;
 			}
 
@@ -164,6 +158,7 @@ public class ASTAnalyze {
 					System.out.println(node.getName().getFullyQualifiedName());
 					interfaceDeclarations++;
 				}
+				
 				return false;
 			}
 		});
@@ -185,7 +180,6 @@ public class ASTAnalyze {
 		});
 	}
 
-	
 	public static void main(String[] args) throws IOException {
 
 		// Initialize Class ASTAnalyze
@@ -201,8 +195,7 @@ public class ASTAnalyze {
 		ASTParser parser = analyzer.initParser(codeBase);	// Initialize ASTParser with given preferences
 		
 		// Determine fully qualified name to count
-		//String target = args[1];
-		//analyzer.parse(parser, target);
+		
 	}
 
 }
