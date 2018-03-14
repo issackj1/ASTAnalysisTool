@@ -133,22 +133,21 @@ public class ASTAnalyze {
 			
 			public boolean visit(SimpleName node) {
 				
-				if (targetName.equals(node.getFullyQualifiedName())) {
-					refCount++;
+				IBinding binding = node.resolveBinding();
+			
+			
+				if(binding instanceof IVariableBinding) {
+					IVariableBinding varBinding = (IVariableBinding) binding;
+					
+					if(varBinding.isField() && 
+							targetName.equals(varBinding.getType().getQualifiedName())){
+						refCount++;
+						System.out.println("I've been hit!");
+					}
 				}
 				return false;
 			}
 			
-			public boolean visit(PrimitiveType node) {
-				
-				ITypeBinding type = node.resolveBinding();
-				String nodeName = type.getQualifiedName();
-				
-				if (targetName.equals(nodeName)) {
-					refCount++;
-				}
-				return false;
-			}
 		});
 	}
 	
