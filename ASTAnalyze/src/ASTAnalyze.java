@@ -3,7 +3,6 @@ import org.eclipse.jdt.core.dom.*;
 import java.io.*;
 import java.util.*;
 import java.util.ArrayList;
-
 import javax.naming.Binding;
 
 
@@ -16,19 +15,13 @@ import javax.naming.Binding;
 
 public class ASTAnalyze {
 
-	public int classDeclarations;
-	public int annotationDeclarations;
-	public int enumDeclarations;
-	public int interfaceDeclarations;
-	public int referencesCount;
+	public int declarationCount;
+	public int referenceCount;
 
 	public ASTAnalyze() {
 		
-		this.classDeclarations = 0;
-		this.annotationDeclarations = 0;
-		this.enumDeclarations = 0;
-		this.interfaceDeclarations = 0;
-		this.referencesCount = 0;
+		this.declarationCount = 0;
+		this.referenceCount = 0;
 	
 	}
 	
@@ -76,7 +69,7 @@ public class ASTAnalyze {
 	}
 	
 	
-	public ASTParser initParser(String code, File fileName, String source) {
+	public ASTParser initParser(String code, File fileName) {
 		
 		String classPathReplacer = new File("").getAbsolutePath();
 		String[] classPathReplacerArray = {classPathReplacer};
@@ -96,34 +89,25 @@ public class ASTAnalyze {
 	}
 	
 		
-	public void parse(ASTParser parser, String targetName) {
+	public void parse(ASTParser parser, String targetName, String source, File file) {
 			
-		switch(targetName) {
+		this.countClass(parser);
+		parser = this.initParser(source, file);
 		
-		case "Class":
-			this.classCount(parser);
-			break;
-			
-		case "Annotation":
-			this.annotationCount(parser);
-			break;
-			
-		case "Interface":
-			this.interfaceCount(parser);
-			break;
-			
-		case "Enumeration":
-			this.enumCount(parser);
-			break;
-			
-		default:
-			break;
-			
-		}
+		this.countAnnotation(parser);
+		parser = this.initParser(source, file);
+		
+		this.countInterface(parser);
+		parser = this.initParser(source, file);
+		
+		this.countEnum(parser);
+		parser = this.initParser(source, file);
+						
+		this.countReference(parser, targetName);
+		
 	}
-	
-		
-	public void classCount(ASTParser parser) {
+			
+	public void countClass(ASTParser parser) {
 
 		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
 		
@@ -132,8 +116,8 @@ public class ASTAnalyze {
 			public boolean visit(TypeDeclaration node) {
 			
 				if(!node.isInterface()) {
-					System.out.println(node.getName().getFullyQualifiedName());
-					classDeclarations++;
+					declarationCount++;
+					System.out.println("Declaration was found");
 				}
 												
 				return false;
@@ -142,7 +126,7 @@ public class ASTAnalyze {
 		});
 	}
 	
-	public void annotationCount(ASTParser parser) {
+	public void countAnnotation(ASTParser parser) {
 
 		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
 
@@ -151,8 +135,8 @@ public class ASTAnalyze {
 			public boolean visit(AnnotationTypeDeclaration node) {
 				
 				if (node.getClass().isAnnotation()) {
-					System.out.println(node.getName().getFullyQualifiedName());
-					annotationDeclarations++;
+					declarationCount++;
+					System.out.println("Declaration was found");
 				}
 
 				return false;
@@ -161,7 +145,7 @@ public class ASTAnalyze {
 		});
 	}
 	
-	public void interfaceCount(ASTParser parser) {
+	public void countInterface(ASTParser parser) {
 		
 		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
 		
@@ -170,8 +154,8 @@ public class ASTAnalyze {
 			public boolean visit(TypeDeclaration node) {
 				
 				if (node.isInterface()) {
-					System.out.println(node.getName().getFullyQualifiedName());
-					interfaceDeclarations++;
+					declarationCount++;
+					System.out.println("Declaration was found");
 				}
 				
 				return false;
@@ -179,7 +163,7 @@ public class ASTAnalyze {
 		});
 	}
 	
-	public void referenceCount(ASTParser parser, String targetName) {
+	public void countReference(ASTParser parser, String targetName) {
 
 		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
 
@@ -192,7 +176,8 @@ public class ASTAnalyze {
 				if(binding instanceof IVariableBinding) {
 					IVariableBinding varBinding = (IVariableBinding) binding;
 					if(targetName.equals(varBinding.getType().getQualifiedName())){
-						referencesCount++;
+						referenceCount++;
+						System.out.println("Reference was found");
 					}
 				}
 				return true;
@@ -200,7 +185,7 @@ public class ASTAnalyze {
 		});
 	}
 	
-	public void enumCount(ASTParser parser) {
+	public void countEnum(ASTParser parser) {
 		
 		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
 		
@@ -208,13 +193,21 @@ public class ASTAnalyze {
 			
 			public boolean visit(EnumDeclaration node) {
 				
-				enumDeclarations++;
+				declarationCount++;
 				
 				return false;
 			}
 		});
 	}
 
+	public int getDeclarationCount() {
+		return this.declarationCount;
+	}
+	
+	public int getReferenceCount() {
+		return this.referenceCount;
+	}
+	
 	public static void main(String[] args) throws IOException {
 
 		// Initialize Class ASTAnalyze
@@ -222,7 +215,7 @@ public class ASTAnalyze {
 
 		// Prepare source code from pathfile
 		String sourcepath = args[0];		
-		//String targetClass = args[1];
+		String targetName = args[1];
 		
 		// Source path from terminal argument
 		File directory = new File(sourcepath);				// Create File Object with source name
@@ -230,9 +223,13 @@ public class ASTAnalyze {
 		
 		for (File files: fileList) {
 			String javaFile = analyzer.getFile(files);
-			ASTParser parser = analyzer.initParser(javaFile, files, sourcepath);		
+			ASTParser parser = analyzer.initParser(javaFile, files);
+			analyzer.parse(parser, targetName, javaFile, files);
 		}
 		
+		System.out.println(analyzer.getDeclarationCount());
+		
+		System.out.println(analyzer.getReferenceCount());
 	
 	}
 
