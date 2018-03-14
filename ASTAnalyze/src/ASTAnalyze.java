@@ -152,6 +152,31 @@ public class ASTAnalyze {
 		});
 	}
 	
+		public void countReference(ASTParser parser, String targetName) {
+
+		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+
+		cu.accept(new ASTVisitor() {
+
+			public boolean visit(SimpleName node) {
+				
+				IBinding binding = node.resolveBinding();
+			
+				if(binding instanceof IVariableBinding) {
+					IVariableBinding varBinding = (IVariableBinding) binding;
+					ITypeBinding declaringType = varBinding.getDeclaringClass();
+					//System.out.println(varBinding.getVariableDeclaration().);
+
+					if(varBinding.isField() && 
+							targetName.equals(varBinding.getType().getQualifiedName()) ){
+						referenceCount++;
+					}
+				}
+				return true;
+			}
+		});
+	}
+	
 	public int getDeclarationCount() {
 		return this.decCount;
 	}
