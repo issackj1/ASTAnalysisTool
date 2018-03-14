@@ -106,16 +106,39 @@ public class ASTAnalyze {
 	// Sample createAST portion method that will go under parse(ASTParser parse, String targetName)
 	
 	public void classCount(ASTParser parser) {
-		
+
 		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
 
 		cu.accept(new ASTVisitor() {
-			
-			public boolean visit(TypeDeclaration node) {			
+
+			public boolean visit(TypeDeclaration node) {
 				
+			if(!node.isInterface()) {
+				System.out.println(node.getName().getFullyQualifiedName());
+				classDeclarations++;
+			}
+			return false;
+			}
+
+		});
+	}
+
+	public void annotationCount(ASTParser parser) {
+
+		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+
+		cu.accept(new ASTVisitor() {
+
+			public boolean visit(AnnotationTypeDeclaration node) {
+				
+				if (node.getClass().isAnnotation()) {
+					System.out.println(node.getName().getFullyQualifiedName());
+					annotationDeclarations++;
+				}
+
 				return false;
 			}
-			
+
 		});
 	}
 	
