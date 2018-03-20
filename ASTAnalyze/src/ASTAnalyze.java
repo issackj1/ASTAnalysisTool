@@ -18,6 +18,7 @@ public class ASTAnalyze {
 
 	public int decCount;
 	public int refCount;
+	//mychange
 
 	public ASTAnalyze() {
 		
